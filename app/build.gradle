@@ -72,6 +72,8 @@ dependencies {
 
     // Room libraries
     implementation "androidx.room:room-runtime:$room_version"
+    implementation 'com.google.android.ads:mediation-test-suite:2.0.0'
+    implementation 'androidx.leanback:leanback:1.0.0'
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
 
