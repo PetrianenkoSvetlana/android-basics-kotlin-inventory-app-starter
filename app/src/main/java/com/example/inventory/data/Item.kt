@@ -14,7 +14,13 @@ data class Item(
     @ColumnInfo(name = "price")
     val itemPrice: Double,
     @ColumnInfo(name = "quantity")
-    val quantityInStock: Int
+    val quantityInStock: Int,
+    @ColumnInfo(name = "provider_name")
+    val providerName: String,
+    @ColumnInfo(name = "provider_email")
+    val providerEmail: String,
+    @ColumnInfo(name = "provider_phone_number")
+    val providerPhoneNumber: String
 )
 
 fun Item.getFormattedPrice(): String =

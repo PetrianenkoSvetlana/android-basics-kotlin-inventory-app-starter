@@ -60,16 +60,45 @@
         app:layout_constraintTop_toBottomOf="@+id/item_price"
         tools:text="5" />
 
+    <TextView
+        android:id="@+id/item_provider_name"
+        style="@style/Widget.Inventory.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_count"
+        tools:text="Web" />
+
+    <TextView
+        android:id="@+id/item_provider_email"
+        style="@style/Widget.Inventory.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_provider_name"
+        tools:text="web@gmail.com" />
+
+    <TextView
+        android:id="@+id/item_provider_phone_number"
+        style="@style/Widget.Inventory.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_provider_email"
+        tools:text="89654397856" />
+
     <Button
         android:id="@+id/sell_item"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin"
+        android:layout_marginTop="16dp"
         android:text="@string/sell"
-        app:layout_constraintBottom_toTopOf="@+id/delete_item"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/item_count" />
+        app:layout_constraintTop_toBottomOf="@+id/item_provider_phone_number" />
 
     <Button
         android:id="@+id/delete_item"

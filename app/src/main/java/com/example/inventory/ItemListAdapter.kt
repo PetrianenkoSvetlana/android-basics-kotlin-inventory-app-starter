@@ -37,6 +37,7 @@ class ItemListAdapter(private val onItemClicked: (Item) -> Unit) :
                         itemName.text = item.itemName
                         itemPrice.text = item.getFormattedPrice()
                         itemQuantity.text = item.quantityInStock.toString()
+
                     }
                 }
             }

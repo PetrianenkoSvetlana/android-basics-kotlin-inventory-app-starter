@@ -64,7 +64,10 @@ class AddItemFragment : Fragment() {
         return viewModel.isEntryValid(
             binding.itemName.text.toString(),
             binding.itemPrice.text.toString(),
-            binding.itemCount.text.toString()
+            binding.itemCount.text.toString(),
+            binding.itemProviderName.text.toString(),
+            binding.itemProviderEmail.text.toString(),
+            binding.itemProviderPhoneNumber.text.toString()
         )
     }
 
@@ -74,18 +77,24 @@ class AddItemFragment : Fragment() {
                 binding.itemName.text.toString(),
                 binding.itemPrice.text.toString(),
                 binding.itemCount.text.toString(),
+                binding.itemProviderName.text.toString(),
+                binding.itemProviderEmail.text.toString(),
+                binding.itemProviderPhoneNumber.text.toString()
             )
+            val action = AddItemFragmentDirections.actionAddItemFragmentToItemListFragment()
+            findNavController().navigate(action)
         }
-        val action = AddItemFragmentDirections.actionAddItemFragmentToItemListFragment()
-        findNavController().navigate(action)
     }
 
     private fun bind(item: Item) {
-        val price = "%.2f".format(item.itemPrice)
+        val price = "%.2f".format(item.itemPrice).replace(',', '.')
         binding.apply {
             itemName.setText(item.itemName, TextView.BufferType.SPANNABLE)
             itemPrice.setText(price, TextView.BufferType.SPANNABLE)
             itemCount.setText(item.quantityInStock.toString(), TextView.BufferType.SPANNABLE)
+            itemProviderName.setText(item.providerName, TextView.BufferType.SPANNABLE)
+            itemProviderEmail.setText(item.providerEmail, TextView.BufferType.SPANNABLE)
+            itemProviderPhoneNumber.setText(item.providerPhoneNumber, TextView.BufferType.SPANNABLE)
             saveAction.setOnClickListener { updateItem() }
         }
     }
@@ -96,7 +105,10 @@ class AddItemFragment : Fragment() {
                 this.navigationArgs.itemId,
                 this.binding.itemName.text.toString(),
                 this.binding.itemPrice.text.toString(),
-                this.binding.itemCount.text.toString()
+                this.binding.itemCount.text.toString(),
+                this.binding.itemProviderName.text.toString(),
+                this.binding.itemProviderEmail.text.toString(),
+                this.binding.itemProviderPhoneNumber.text.toString()
             )
             val action = AddItemFragmentDirections.actionAddItemFragmentToItemListFragment()
             findNavController().navigate(action)

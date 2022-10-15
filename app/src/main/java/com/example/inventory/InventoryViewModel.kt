@@ -13,11 +13,21 @@ class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
         }
     }
 
-    private fun getNewItemEntry(itemName: String, itemPrice: String, itemCount: String): Item {
+    private fun getNewItemEntry(
+        itemName: String,
+        itemPrice: String,
+        itemCount: String,
+        itemProviderName: String,
+        itemProviderEmail: String,
+        itemProviderPhoneNumber: String
+    ): Item {
         return Item(
             itemName = itemName,
             itemPrice = itemPrice.toDouble(),
-            quantityInStock = itemCount.toInt()
+            quantityInStock = itemCount.toInt(),
+            providerName = itemProviderName,
+            providerEmail = itemProviderEmail,
+            providerPhoneNumber = itemProviderPhoneNumber
         )
     }
 
@@ -31,13 +41,19 @@ class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
         itemId: Int,
         itemName: String,
         itemPrice: String,
-        itemCount: String
+        itemCount: String,
+        itemProviderName: String,
+        itemProviderEmail: String,
+        itemProviderPhoneNumber: String
     ): Item {
         return Item(
             id = itemId,
             itemName = itemName,
             itemPrice = itemPrice.toDouble(),
-            quantityInStock = itemCount.toInt()
+            quantityInStock = itemCount.toInt(),
+            providerName = itemProviderName,
+            providerEmail = itemProviderEmail,
+            providerPhoneNumber = itemProviderPhoneNumber
         )
     }
 
@@ -45,9 +61,12 @@ class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
         itemId: Int,
         itemName: String,
         itemPrice: String,
-        itemCount: String
+        itemCount: String,
+        itemProviderName: String,
+        itemProviderEmail: String,
+        itemProviderPhoneNumber: String
     ) {
-        val updatedItem = getUpdatedItemEntry(itemId, itemName, itemPrice, itemCount)
+        val updatedItem = getUpdatedItemEntry(itemId, itemName, itemPrice, itemCount, itemProviderName, itemProviderEmail, itemProviderPhoneNumber)
         updateItem(updatedItem)
     }
 
@@ -64,13 +83,32 @@ class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
         }
     }
 
-    fun addNewItem(itemName: String, itemPrice: String, itemCount: String) {
-        val newItem = getNewItemEntry(itemName, itemPrice, itemCount)
+    fun addNewItem(
+        itemName: String,
+        itemPrice: String,
+        itemCount: String,
+        itemProviderName: String,
+        itemProviderEmail: String,
+        itemProviderPhoneNumber: String
+    ) {
+        val newItem = getNewItemEntry(itemName, itemPrice, itemCount, itemProviderName, itemProviderEmail, itemProviderPhoneNumber)
         insertItem(newItem)
     }
 
-    fun isEntryValid(itemName: String, itemPrice: String, itemCount: String): Boolean {
-        if (itemName.isBlank() || itemPrice.isBlank() || itemCount.isBlank()) {
+    fun isEntryValid(
+        itemName: String,
+        itemPrice: String,
+        itemCount: String,
+        itemProviderName: String,
+        itemProviderEmail: String,
+        itemProviderPhoneNumber: String
+    ): Boolean {
+        if (itemName.isBlank() ||
+            itemPrice.isBlank() || itemPrice.toDouble() <= 0 ||
+            itemCount.isBlank() || itemCount.toInt() <= 0 ||
+            itemProviderName.isBlank() ||
+            itemProviderEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(itemProviderEmail).matches() ||
+            itemProviderPhoneNumber.isBlank() || !android.util.Patterns.PHONE.matcher(itemProviderPhoneNumber).matches()) {
             return false
         }
         return true
