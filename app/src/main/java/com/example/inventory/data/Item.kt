@@ -21,7 +21,19 @@ data class Item(
     val providerEmail: String,
     @ColumnInfo(name = "provider_phone_number")
     val providerPhoneNumber: String
-)
+) {
+    override fun toString(): String {
+        return "Информация о товаре:\n" +
+                "Название: ${itemName}\n" +
+                "Цена: ${itemPrice}\n" +
+                "Количество на складе: ${quantityInStock}\n" +
+                "\nИнформация о поставщике:\n" +
+                "Имя (название организации): ${providerName}\n" +
+                "Email: ${providerEmail}\n" +
+                "Номер телефона: $providerPhoneNumber"
+    }
+}
 
 fun Item.getFormattedPrice(): String =
     NumberFormat.getCurrencyInstance().format(itemPrice)
+
