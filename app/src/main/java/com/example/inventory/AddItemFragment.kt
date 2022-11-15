@@ -26,6 +26,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.example.inventory.data.Item
 import com.example.inventory.databinding.FragmentAddItemBinding
 
@@ -42,6 +44,7 @@ class AddItemFragment : Fragment() {
     }
 
     lateinit var item: Item
+    private val PREFS_FILE = "Setting_Key"
 
     private val navigationArgs: ItemDetailFragmentArgs by navArgs()
 
@@ -116,6 +119,13 @@ class AddItemFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            requireContext(),
+            PREFS_FILE,
+            MasterKey.Builder(requireContext()).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
         super.onViewCreated(view, savedInstanceState)
         val id = navigationArgs.itemId
         if (id > 0) {
@@ -124,6 +134,13 @@ class AddItemFragment : Fragment() {
                 bind(item)
             }
         } else {
+            if (sharedPreferences.getBoolean("DefaultValues", true)) {
+                binding.apply {
+                    itemProviderName.setText(sharedPreferences.getString("DefaultProviderName", ""))
+                    itemProviderEmail.setText(sharedPreferences.getString("DefaultProviderEmail", ""))
+                    itemProviderPhoneNumber.setText(sharedPreferences.getString("DefaultProviderPhoneNumber", ""))
+                }
+            }
             binding.saveAction.setOnClickListener {
                 addNewItem()
             }

@@ -16,9 +16,12 @@
 package com.example.inventory
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
@@ -34,6 +37,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         navController = navHostFragment.navController
         // Set up the action bar for use with the NavController
         setupActionBarWithNavController(this, navController)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.setting_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.setting_menu -> {
+                val action = ItemListFragmentDirections.actionItemListFragmentToSettingFragment()
+                navController.navigate(action)
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     /**

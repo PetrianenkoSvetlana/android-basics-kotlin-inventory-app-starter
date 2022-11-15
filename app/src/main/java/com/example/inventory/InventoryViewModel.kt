@@ -104,8 +104,8 @@ class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
         itemProviderPhoneNumber: String
     ): Boolean {
         if (itemName.isBlank() ||
-            itemPrice.isBlank() || itemPrice.toDouble() <= 0 ||
-            itemCount.isBlank() || itemCount.toInt() <= 0 ||
+            itemPrice.isBlank() ||
+            itemCount.isBlank() ||
             itemProviderName.isBlank() ||
             itemProviderEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(itemProviderEmail).matches() ||
             itemProviderPhoneNumber.isBlank() || !android.util.Patterns.PHONE.matcher(itemProviderPhoneNumber).matches()) {
