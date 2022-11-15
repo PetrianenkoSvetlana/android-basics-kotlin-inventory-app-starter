@@ -20,23 +20,30 @@ package com.example.inventory
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.inventory.data.Item
 import com.example.inventory.data.getFormattedPrice
 import com.example.inventory.databinding.FragmentItemDetailBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.gson.Gson
+import java.io.*
+import java.nio.charset.StandardCharsets
 
 /**
  * [ItemDetailFragment] displays the details of the selected item.
@@ -89,6 +96,86 @@ class ItemDetailFragment : Fragment() {
             }
             else {
                 shareItem.setOnClickListener { share(item) }
+            }
+            saveInFile.setOnClickListener {
+                // Request code for creating a PDF document.
+                createFile(Uri.parse(requireContext().filesDir.toString()))
+            }
+        }
+    }
+
+    private fun createFile(pickerInitialUri: Uri) {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, item.itemName)
+
+            // Optionally, specify a URI for the directory that should be opened in
+            // the system file picker before your app creates the document.
+            putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri)
+        }
+        requestUri.launch(intent)
+    }
+
+    private var requestUri = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val contentResolver = requireContext().contentResolver
+
+        if (result != null && result.resultCode == Activity.RESULT_OK) {
+            result.data?.let { intent ->
+                intent.data?.let { fileUri ->
+                    val mainKey = MasterKey.Builder(requireContext())
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build()
+
+                    val cacheFileToWrite  = File(requireContext().cacheDir, item.itemName + ".json")
+
+                    val encryptedFile = EncryptedFile.Builder(
+                        requireContext(),
+                        cacheFileToWrite,
+                        mainKey,
+                        EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+                    ).build()
+
+                    if (cacheFileToWrite.exists()) {
+                        cacheFileToWrite.delete()
+                    }
+
+                    try {
+                        val encryptedOutputStream = encryptedFile.openFileOutput()
+                        val gson = Gson()
+                        val fileContent = gson.toJson(item)
+                            .toByteArray(StandardCharsets.UTF_8)
+
+                        encryptedOutputStream.apply {
+                            write(fileContent)
+                            flush()
+                            close()
+                        }
+                    } catch (e: FileNotFoundException) {
+                        e.printStackTrace()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+
+                    try {
+                        contentResolver.openFileDescriptor(fileUri, "w")?.use {
+                            if (!cacheFileToWrite.exists()) {
+                                throw NoSuchFileException(cacheFileToWrite )
+                            }
+
+                            FileOutputStream(it.fileDescriptor).use {
+                                it.write(
+                                    cacheFileToWrite.inputStream().readBytes()
+                                )
+                            }
+                        }
+                    } catch (e: FileNotFoundException) {
+                        e.printStackTrace()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+
+                }
             }
         }
     }

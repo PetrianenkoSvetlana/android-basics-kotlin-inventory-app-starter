@@ -111,6 +111,15 @@
         app:layout_constraintTop_toBottomOf="@+id/sell_item" />
 
     <Button
+        android:id="@+id/save_in_file"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Save in file"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/delete_item" />
+
+    <Button
         android:id="@+id/delete_item"
         style="?attr/materialButtonOutlinedStyle"
         android:layout_width="0dp"

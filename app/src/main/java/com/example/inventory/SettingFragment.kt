@@ -42,7 +42,7 @@ class SettingFragment : Fragment() {
                 LinearLayout.VISIBLE
             }
         }
-        
+
         binding.apply {
             hideSensitiveData.isChecked = sharedPreferences.getBoolean("HideSensitiveData", false)
             forbidSendingData.isChecked = sharedPreferences.getBoolean("ForbidSensitiveData", false)
