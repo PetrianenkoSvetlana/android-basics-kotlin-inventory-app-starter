@@ -15,21 +15,36 @@
  */
 package com.example.inventory
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context.INPUT_METHOD_SERVICE
+import android.content.Intent
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
+import android.provider.OpenableColumns
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.inventory.data.Item
 import com.example.inventory.databinding.FragmentAddItemBinding
+import com.google.gson.Gson
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 
 /**
  * Fragment to add or update an item in the Inventory database.
@@ -45,6 +60,7 @@ class AddItemFragment : Fragment() {
 
     lateinit var item: Item
     private val PREFS_FILE = "Setting_Key"
+
 
     private val navigationArgs: ItemDetailFragmentArgs by navArgs()
 
@@ -99,6 +115,89 @@ class AddItemFragment : Fragment() {
             itemProviderEmail.setText(item.providerEmail, TextView.BufferType.SPANNABLE)
             itemProviderPhoneNumber.setText(item.providerPhoneNumber, TextView.BufferType.SPANNABLE)
             saveAction.setOnClickListener { updateItem() }
+            loadFromFileBtn.setOnClickListener { openFile(Uri.parse("/")) }
+        }
+    }
+
+    private fun openFile(pickerInitialUri: Uri) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            // Optionally, specify a URI for the directory that should be opened in
+            // the system file picker before your app creates the document.
+            putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri)
+        }
+        requestUri.launch(intent)
+    }
+
+    @SuppressLint("Range")
+    private fun dumpFileName(uri: Uri) : String{
+        // The query, because it only applies to a single document, returns only
+        // one row. There's no need to filter, sort, or select fields,
+        // because we want all fields for one document.
+        val cursor: Cursor? = requireActivity().contentResolver.query(
+            uri, null, null, null, null, null)
+
+        cursor?.use {
+            // moveToFirst() returns false if the cursor has 0 rows. Very handy for
+            // "if there's anything to look at, look at it" conditionals.
+            if (it.moveToFirst()) {
+
+                // Note it's called "Display Name". This is
+                // provider-specific, and might not necessarily be the file name.
+                val displayName: String =
+                    it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+
+                return displayName
+            }
+        }
+        return ""
+    }
+
+    private var requestUri = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result != null && result.resultCode == Activity.RESULT_OK) {
+            result.data?.let { intent ->
+                intent.data?.let { fileUri ->
+                    val mainKey = MasterKey.Builder(requireActivity().applicationContext)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build()
+
+                    val cacheFileToWrite  = File(requireActivity().applicationContext.cacheDir, dumpFileName(fileUri))
+
+                    requireActivity().applicationContext.contentResolver.openInputStream(fileUri)!!.copyTo(
+                        requireActivity().applicationContext.contentResolver.openOutputStream(cacheFileToWrite.toUri())!!
+                    )
+                    val encryptedFile = EncryptedFile.Builder(
+                        requireActivity().applicationContext,
+                        cacheFileToWrite,
+                        mainKey,
+                        EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+                    ).build()
+
+                    try {
+                        val inputStream = encryptedFile.openFileInput()
+                        val byteArrayOutputStream = ByteArrayOutputStream()
+                        var nextByte: Int = inputStream.read()
+                        while (nextByte != -1) {
+                            byteArrayOutputStream.write(nextByte)
+                            nextByte = inputStream.read()
+                        }
+
+                        val plaintext = byteArrayOutputStream.toByteArray()
+
+                        val gson = Gson()
+                        val item = gson.fromJson(plaintext.toString(Charsets.UTF_8), Item::class.java)
+
+
+                        viewModel.addNewItem(item)
+                        bind(item)
+
+                    }
+                    catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
         }
     }
 
@@ -134,11 +233,17 @@ class AddItemFragment : Fragment() {
                 bind(item)
             }
         } else {
-            if (sharedPreferences.getBoolean("DefaultValues", true)) {
+            if (sharedPreferences.getBoolean("DefaultValues", false)) {
                 binding.apply {
                     itemProviderName.setText(sharedPreferences.getString("DefaultProviderName", ""))
                     itemProviderEmail.setText(sharedPreferences.getString("DefaultProviderEmail", ""))
                     itemProviderPhoneNumber.setText(sharedPreferences.getString("DefaultProviderPhoneNumber", ""))
+                }
+            }
+
+            binding.apply {
+                loadFromFileBtn.setOnClickListener {
+                    openFile(Uri.parse("/"))
                 }
             }
             binding.saveAction.setOnClickListener {

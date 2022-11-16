@@ -1,8 +1,10 @@
 package com.example.inventory
 
+import android.icu.text.AlphabeticIndex
 import androidx.lifecycle.*
 import com.example.inventory.data.Item
 import com.example.inventory.data.ItemDao
+import com.example.inventory.data.Record
 import kotlinx.coroutines.launch
 
 class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
@@ -81,6 +83,11 @@ class InventoryViewModel(private val itemDao: ItemDao) : ViewModel() {
         viewModelScope.launch {
             itemDao.delete(item)
         }
+    }
+
+    fun addNewItem(item: Item) {
+        item.itemTypeRecord = Record.FILE
+        insertItem(item)
     }
 
     fun addNewItem(

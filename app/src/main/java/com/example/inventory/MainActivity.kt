@@ -15,18 +15,41 @@
  */
 package com.example.inventory
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
+import android.provider.OpenableColumns
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
+import androidx.security.crypto.EncryptedFile
+import androidx.security.crypto.MasterKey
+import com.example.inventory.data.Item
+import com.google.gson.Gson
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     private lateinit var navController: NavController
+
+    private val viewModel : InventoryViewModel by viewModels<InventoryViewModel> {
+        InventoryViewModelFactory(
+            (application as InventoryApplication).database.itemDao()
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,4 +84,5 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
+
 }

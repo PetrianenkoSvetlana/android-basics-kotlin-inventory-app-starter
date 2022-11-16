@@ -20,7 +20,9 @@ data class Item(
     @ColumnInfo(name = "provider_email")
     val providerEmail: String,
     @ColumnInfo(name = "provider_phone_number")
-    val providerPhoneNumber: String
+    val providerPhoneNumber: String,
+    @ColumnInfo(name = "item_type_record")
+    var itemTypeRecord: Record = Record.MANUAL
 ) {
     override fun toString(): String {
         return "Информация о товаре:\n" +
@@ -37,3 +39,6 @@ data class Item(
 fun Item.getFormattedPrice(): String =
     NumberFormat.getCurrencyInstance().format(itemPrice)
 
+enum class Record{
+    MANUAL, FILE
+}

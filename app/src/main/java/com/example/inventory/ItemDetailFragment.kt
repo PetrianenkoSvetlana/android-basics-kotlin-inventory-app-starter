@@ -87,12 +87,13 @@ class ItemDetailFragment : Fragment() {
             itemProviderName.text = item.providerName
             itemProviderEmail.text = item.providerEmail
             itemProviderPhoneNumber.text = item.providerPhoneNumber
+            itemTypeRecord.text = item.itemTypeRecord.toString()
             sellItem.isEnabled = viewModel.isStockAvailable(item)
             sellItem.setOnClickListener { viewModel.sellItem(item) }
             deleteItem.setOnClickListener { showConfirmationDialog() }
             editItem.setOnClickListener { editItem() }
             if (sharedPreferences.getBoolean("ForbidSensitiveData", true)) {
-                shareItem.isEnabled = true
+                shareItem.isEnabled = false
             }
             else {
                 shareItem.setOnClickListener { share(item) }
@@ -178,6 +179,20 @@ class ItemDetailFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun readTextFromUri(uri: Uri): String {
+        val stringBuilder = StringBuilder()
+        requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                var line: String? = reader.readLine()
+                while (line != null) {
+                    stringBuilder.append(line)
+                    line = reader.readLine()
+                }
+            }
+        }
+        return stringBuilder.toString()
     }
 
     private fun editItem() {
