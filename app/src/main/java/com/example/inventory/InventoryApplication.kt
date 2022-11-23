@@ -16,8 +16,36 @@
 package com.example.inventory
 
 import android.app.Application
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import com.example.inventory.data.ItemRoomDatabase
+import java.security.KeyStore
+import javax.crypto.KeyGenerator
 
 class InventoryApplication : Application() {
-    val database: ItemRoomDatabase by lazy { ItemRoomDatabase.getDatabase(this) }
+    val database: ItemRoomDatabase by lazy {
+        // Get the key
+        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+            load(null)
+        }
+
+        val secretKeyEntry = ks.getEntry("Dejavu", null) as? KeyStore.SecretKeyEntry
+        val secretKey = if (secretKeyEntry == null) {
+            val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+            keyGenerator.init(
+                KeyGenParameterSpec.Builder("Dejavu",
+                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                )
+                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                    .setUserAuthenticationRequired(true)
+                    .build()
+            )
+            keyGenerator.generateKey()
+        }
+        else {
+            secretKeyEntry.secretKey
+        }
+
+        ItemRoomDatabase.getDatabase(this, secretKey.toString())
+    }
 }
